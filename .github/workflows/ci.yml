@@ -42,7 +42,6 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const issueNumber = pr ? pr.number : github?.context?.run_id;
           const pr = payload?.pull_request;
           const issueNumber = pr ? pr.number : github?.context?.issue?.number;
           const message = pr 
