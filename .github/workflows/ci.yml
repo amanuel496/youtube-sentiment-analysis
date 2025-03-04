@@ -12,83 +12,90 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run tests
-      env:
-        PYTHONPATH: src
-      run: |
-        pytest -v tests/test_extraction.py --junitxml=reports/test-results.xml
+      - name: Run tests
+        env:
+          PYTHONPATH: src
+        run: |
+          pytest -v tests/test_extraction.py --junitxml=reports/test-results.xml
 
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: reports/test-results.xml
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: reports/test-results.xml
 
-    - name: Notify on Failure
-      if: ${{ failure() }}
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const pr = payload?.pull_request;
-          const issueNumber = pr ? pr.number : github?.context?.issue?.number;
-          const message = pr 
-            ? '🚨 The build has failed. Please review the test results.' 
-            : '🚨 The build has failed for the latest commit. Please review the test results.';
+      - name: Notify on Failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context, github } = require('@actions/github');
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              console.log('No pull request found. Skipping comment (push event).');
+              return;
+            }
+            const issueNumber = pr.number;
+            const message = '🚨 The build has failed. Please review the test results.';
 
-          github.rest.issues.createComment({
-            issue_number: issueNumber,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: message
-          });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: message
+            });
 
-    - name: Notify on Success 
-      if: ${{ success() }}
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const payload = github?.context?.payload;
-          const pr = payload?.pull_request;
-          const issueNumber = pr ? pr.number : github?.context?.run_id;
-          const message = pr 
-            ? '✅ The build has succeeded. All tests passed!'
-            : '✅ The build has succeeded for the latest commit. All tests passed!';
+      - name: Notify on Success
+        if: ${{ success() }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context, github } = require('@actions/github');
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              console.log('No pull request found. Skipping comment (push event).');
+              return;
+            }
+            const issueNumber = pr.number;
+            const message = '✅ The build has succeeded. All tests passed!';
 
-          github.rest.issues.createComment({
-            issue_number: issueNumber,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: message
-          });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: message
+            });
 
-    - name: Notify on Skipped
-      if: ${{ cancelled() }}
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const payload = github?.context?.payload;
-          const pr = payload?.pull_request;
-          const issueNumber = pr ? pr.number : github?.context?.run_id;
-          const message = pr 
-            ? '⏸️ The build was skipped. Please check the logs for more details.'
-            : '⏸️ The build was skipped for the latest commit. Please check the logs for more details.';
+      - name: Notify on Skipped
+        if: ${{ cancelled() }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context, github } = require('@actions/github');
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              console.log('No pull request found. Skipping comment (push event).');
+              return;
+            }
+            const issueNumber = pr.number;
+            const message = '⏸️ The build was skipped. Please check the logs for more details.';
 
-          github.rest.issues.createComment({
-            issue_number: issueNumber,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: message
-          });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: message
+            });
