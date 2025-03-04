@@ -40,8 +40,9 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const pr = github.context.payload.pull_request;
-          const issueNumber = pr ? pr.number : github.context.run_id;
+          const payload = github?.context?.payload;
+          const pr = payload?.pull_request;
+          const issueNumber = pr ? pr.number : github?.context?.run_id;
           const message = pr 
             ? '🚨 The build has failed. Please review the test results.' 
             : '🚨 The build has failed for the latest commit. Please review the test results.';
@@ -58,8 +59,9 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const pr = github.context.payload.pull_request;
-          const issueNumber = pr ? pr.number : github.context.run_id;
+          const payload = github?.context?.payload;
+          const pr = payload?.pull_request;
+          const issueNumber = pr ? pr.number : github?.context?.run_id;
           const message = pr 
             ? '✅ The build has succeeded. All tests passed!'
             : '✅ The build has succeeded for the latest commit. All tests passed!';
@@ -76,8 +78,9 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const pr = github.context.payload.pull_request;
-          const issueNumber = pr ? pr.number : github.context.run_id;
+          const payload = github?.context?.payload;
+          const pr = payload?.pull_request;
+          const issueNumber = pr ? pr.number : github?.context?.run_id;
           const message = pr 
             ? '⏸️ The build was skipped. Please check the logs for more details.'
             : '⏸️ The build was skipped for the latest commit. Please check the logs for more details.';
