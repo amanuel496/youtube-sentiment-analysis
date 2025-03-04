@@ -36,7 +36,7 @@ jobs:
         path: reports/test-results.xml
 
     - name: Notify on Failure
-      if: failure()
+      if: ${{ failure() }}
       uses: actions/github-script@v6
       with:
         script: |
@@ -55,7 +55,7 @@ jobs:
           });
 
     - name: Notify on Success 
-      if: success()
+      if: ${{ success() }}
       uses: actions/github-script@v6
       with:
         script: |
@@ -74,7 +74,7 @@ jobs:
           });
 
     - name: Notify on Skipped
-      if: cancelled()
+      if: ${{ cancelled() }}
       uses: actions/github-script@v6
       with:
         script: |
