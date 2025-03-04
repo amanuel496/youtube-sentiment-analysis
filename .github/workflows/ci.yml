@@ -36,8 +36,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Download required NLTK corpora here
+      - name: Download NLTK data
+        run: |
+          python -m nltk.downloader stopwords
+          # If you need other NLTK corpora (e.g., 'punkt'), uncomment:
+          # python -m nltk.downloader punkt
+
       - name: Run tests
         env:
+          # Ensures Python sees your local 'src' package
           PYTHONPATH: src
         run: |
           pytest -v tests/test_extraction.py --junitxml=reports/test-results-extraction.xml
