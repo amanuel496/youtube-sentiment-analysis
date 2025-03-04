@@ -1,11 +1,9 @@
 import aiohttp
-import os
 import logging
-from dotenv import load_dotenv
 from pathlib import Path
 from tenacity import retry, stop_after_attempt, wait_exponential
-from file_saver import save_comments_to_files
-from config import YOUTUBE_API_URL, API_KEY
+from .file_saver import save_comments_to_files
+from src.config import YOUTUBE_API_URL, API_KEY
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(min=1, max=10), reraise=True)
 async def fetch_comments_page(session, video_id, page_token=None):
