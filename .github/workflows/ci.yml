@@ -26,6 +26,8 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run tests
+      env:
+        PYTHONPATH: src
       run: |
         pytest -v tests/test_extraction.py --junitxml=reports/test-results.xml
 
@@ -40,7 +42,7 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const payload = github?.context?.payload;
+          const issueNumber = pr ? pr.number : github?.context?.run_id;
           const pr = payload?.pull_request;
           const issueNumber = pr ? pr.number : github?.context?.issue?.number;
           const message = pr 
