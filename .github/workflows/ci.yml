@@ -42,7 +42,7 @@ jobs:
         script: |
           const payload = github?.context?.payload;
           const pr = payload?.pull_request;
-          const issueNumber = pr ? pr.number : github?.context?.run_id;
+          const issueNumber = pr ? pr.number : github?.context?.issue?.number;
           const message = pr 
             ? '🚨 The build has failed. Please review the test results.' 
             : '🚨 The build has failed for the latest commit. Please review the test results.';
