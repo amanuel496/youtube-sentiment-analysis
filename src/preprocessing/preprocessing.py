@@ -1,4 +1,3 @@
-import re
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -16,57 +15,61 @@ stop_words = set(stopwords.words('english'))
 whitelist = {'this', 'is', 'us', 'at', 'lots', 'characters', 'of'}
 
 
-def clean_text(text: str) -> str:
-    """Cleans and normalizes the input text."""
+def clean_text(text: pd.Series) -> pd.Series:
+    """Cleans and normalizes the input text using vectorized methods."""
     try:
-        if not isinstance(text, str) or text is None:
-            logging.warning(f"Input is not a valid string: {text}")
-            return ''
+        logging.debug("Starting vectorized text cleaning")
 
-        # Convert to lowercase
-        text = text.lower()
+        # Convert to lowercase and handle non-string values safely
+        text = text.fillna('').astype(str).str.lower()
 
         # Remove URLs
-        text = re.sub(r'http\S+|www\.\S+', '', text)
+        text = text.str.replace(r'http\S+|www\.\S+', '', regex=True)
 
         # Remove HTML tags
-        text = re.sub(r'<.*?>', '', text)
+        text = text.str.replace(r'<.*?>', '', regex=True)
 
         # Handle email addresses specifically (remove special characters but avoid extra spaces)
-        text = re.sub(r'(\S+)@(\S+)\.(\S+)', r'\1 \2\3', text)
+        text = text.str.replace(r'(\S+)@(\S+)\.(\S+)', r'\1 \2\3', regex=True)
 
         # Replace remaining special characters with a space
-        text = re.sub(r'[^a-zA-Z\s]', ' ', text)
+        text = text.str.replace(r'[^a-zA-Z\s]', ' ', regex=True)
 
         # Remove extra whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = text.str.replace(r'\s+', ' ', regex=True).str.strip()
 
         # Remove stop words and apply lemmatization
-        cleaned_text = []
-        for word in text.split():
-            if word in whitelist or word not in stop_words:
-                cleaned_text.append(word if word in whitelist else lemmatizer.lemmatize(word))
+        text = text.apply(lambda x: ' '.join([
+            word if word in whitelist else lemmatizer.lemmatize(word)
+            for word in x.split() if word in whitelist or word not in stop_words
+        ]))
 
-        return ' '.join(cleaned_text)
+        logging.debug("Vectorized text cleaning completed")
+        return text
 
     except Exception as e:
-        logging.error(f"Error cleaning text: {e}", exc_info=True)
-        return ''
+        logging.error(f"Error during vectorized text cleaning: {e}", exc_info=True)
+        return pd.Series()
 
 
 def preprocess_comments(comments: List[Dict[str, str]]) -> pd.DataFrame:
-    """Preprocesses a list of comments by cleaning and preparing them for analysis."""
+    """Preprocesses a list of comments by cleaning and preparing them for analysis using vectorized methods."""
     try:
         # Create a DataFrame from comments
         df = pd.DataFrame(comments)
 
-        # Clean the 'text' column
-        df['clean_text'] = df['text'].apply(clean_text)
+        # Ensure 'text' column exists
+        if 'text' not in df.columns:
+            logging.error("The 'text' column is missing from the input data.")
+            return pd.DataFrame()
 
-        # Drop empty comments
+        # Clean the 'text' column using vectorized methods
+        df['clean_text'] = clean_text(df['text'])
+
+        # Remove rows where 'clean_text' is empty after cleaning
         df = df[df['clean_text'].str.strip() != '']
 
-        logging.info(f"Preprocessed {len(df)} comments.")
+        logging.info(f"Preprocessed {len(df)} comments using vectorized methods.")
         return df
 
     except Exception as e:
