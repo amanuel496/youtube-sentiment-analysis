@@ -28,7 +28,9 @@ EXPECTED_CLEAN_TEXTS = [
 @pytest.mark.parametrize("input_text, expected", zip([comment['text'] for comment in MOCK_COMMENTS], EXPECTED_CLEAN_TEXTS))
 def test_clean_text(input_text, expected):
     """Test the clean_text function with various inputs."""
-    assert clean_text(input_text) == expected
+    # Convert input_text to a pandas Series and get the first result as a string
+    result = clean_text(pd.Series([input_text])).iloc[0]
+    assert result == expected
 
 # Test the preprocess_comments function
 def test_preprocess_comments():
