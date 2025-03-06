@@ -1,6 +1,3 @@
-# Test cases for fetch_comments
-
-# TODO: refactor the module name to match the module name (fetch_comments.py)
 import pytest
 from unittest import mock
 from src.extraction.fetch_comments import get_detailed_comments
@@ -9,8 +6,7 @@ import logging
 # Configure logging for test output
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
-# Mock data
+# Mock data for testing
 MOCK_COMMENTS = [
     {
         'textDisplay': 'Great video!',
@@ -26,9 +22,8 @@ MOCK_COMMENTS = [
     }
 ]
 
-# Test for the comment_fetcher module
 @pytest.mark.asyncio
-async def test_get_detailed_comments(monkeypatch):
+async def test_get_detailed_comments(monkeypatch) -> None:
     """Test fetching comments from a video ID."""
     async def mock_fetch_comments_page(session, video_id, page_token=None):
         return {'items': [{'snippet': {'topLevelComment': {'snippet': MOCK_COMMENTS[0]}}}]}
@@ -43,7 +38,7 @@ async def test_get_detailed_comments(monkeypatch):
 
 @pytest.mark.parametrize("max_results, expected_count", [(1, 1), (2, 2), (10, 2)])
 @pytest.mark.asyncio
-async def test_get_detailed_comments_pagination(monkeypatch, max_results, expected_count):
+async def test_get_detailed_comments_pagination(monkeypatch, max_results: int, expected_count: int) -> None:
     """Test pagination logic in fetching comments."""
     async def mock_fetch_comments_page(session, video_id, page_token=None):
         return {'items': [{'snippet': {'topLevelComment': {'snippet': comment}}} for comment in MOCK_COMMENTS[:max_results]]}
