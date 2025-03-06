@@ -1,15 +1,13 @@
 import logging
+import asyncio
+
 from src.extraction.fetch_comments import get_detailed_comments
 from src.utils.file_saver import save_to_csv, save_to_json
 from src.preprocessing.preprocessing import preprocess_comments
 from src.sentiment_analysis.sentiment_analysis import analyze_sentiment
 
-
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-
-import asyncio
 
 async def run_etl_pipeline(video_id: str, output_format: str = 'json') -> None:
     """Executes the ETL pipeline for YouTube comment sentiment analysis."""
