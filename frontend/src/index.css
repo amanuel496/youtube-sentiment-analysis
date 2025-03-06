@@ -1,0 +1,97 @@
+/* Beautiful and Modern CSS for YouTube Sentiment Analysis App */
+
+:root {
+  font-family: 'Poppins', Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: #333;
+  background-color: #f3f4f6;
+  --primary-gradient: linear-gradient(135deg, #6d28d9, #d946ef, #ec4899);
+  --card-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--primary-gradient);
+  background-size: 200% 200%;
+  animation: gradientAnimation 8s ease infinite;
+}
+
+@keyframes gradientAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+h2 {
+  font-size: 2.5rem;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+input, select {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: var(--card-shadow);
+}
+
+input:focus, select:focus {
+  border-color: #ec4899;
+  box-shadow: 0px 0px 10px rgba(236, 72, 153, 0.5);
+  outline: none;
+}
+
+button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: var(--primary-gradient);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: translateY(-5px);
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 10px 15px -3px, rgba(0, 0, 0, 0.1) 0px 4px 6px -2px;
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+p {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #e5e7eb;
+  color: #374151;
+  font-size: 1.1rem;
+}
+
+/* Additional styles for a polished look */
+.bg-card {
+  background-color: white;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s;
+}
+
+.bg-card:hover {
+  transform: scale(1.02);
+}
