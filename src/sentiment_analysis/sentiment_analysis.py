@@ -47,20 +47,10 @@ def analyze_sentiment(comments: List[str]) -> List[Dict[str, str]]:
     
 if __name__ == '__main__':  
     comments = [
-        "I love the new design!",   # Positive sentiment
-        "I hate the update.",       # Negative sentiment                        
-        "It's okay I guess."        # Neutral sentiment
+        "I love the new design!",
+        "I hate the update.",
+        "It's okay I guess."
     ]
     sentiment_results = analyze_sentiment(comments)
     for result in sentiment_results:
         print(result)
-# Output:
-# {'text': 'I love the new design!', 'sentiment': 'POSITIVE', 'sentiment_score': {'Positive': 0.9998810296058655, 'Negative': 1.2374326209155175e-05, 'Neutral': 0.00010636009244856253, 'Mixed': 1.2598838236174135e-05}}  
-# {'text': 'I hate the update.', 'sentiment': 'NEGATIVE', 'sentiment_score': {'Positive': 0.00010636009244856253, 'Negative': 0.9998810296058655, 'Neutral': 1.2374326209155175e-05, 'Mixed': 1.2598838236174135e-05}}
-# {'text': "It's okay I guess.", 'sentiment': 'NEUTRAL', 'sentiment_score': {}}     
-# The sentiment analysis results are printed for each comment, including the sentiment label and sentiment score.
-# The sentiment score is a dictionary containing the probabilities for different sentiment categories (Positive, Negative, Neutral, Mixed).     
-# The sentiment analysis function uses the AWS Comprehend client to analyze the sentiment of each comment.
-# The sentiment results are returned as a list of dictionaries, where each dictionary contains the original comment text, sentiment label, and sentiment score.
-# The sentiment label indicates the overall sentiment of the comment (POSITIVE, NEGATIVE, NEUTRAL).
-# The sentiment score provides the probabilities for each sentiment category based on the AWS Comprehend analysis.
