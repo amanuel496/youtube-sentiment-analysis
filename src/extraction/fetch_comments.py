@@ -1,6 +1,5 @@
 import aiohttp
 import logging
-from pathlib import Path
 from tenacity import retry, stop_after_attempt, wait_exponential
 from src.config import YOUTUBE_API_URL, API_KEY
 
@@ -14,7 +13,6 @@ async def fetch_comments_page(session, video_id, page_token=None):
         'textFormat': 'plainText',
         'key': API_KEY
     }
-    # Add 'pageToken' only if it is not None
     if page_token:
         params['pageToken'] = page_token
 
@@ -38,24 +36,17 @@ async def get_detailed_comments(video_id, max_results=1000):
                     break
                 for item in response.get('items', []):
                     comment_data = item['snippet']['topLevelComment']['snippet']
-                    comment = {
+                    comments.append({
                         'text': comment_data['textDisplay'],
                         'author': comment_data['authorDisplayName'],
                         'likes': comment_data['likeCount'],
                         'published_at': comment_data['publishedAt']
-                    }
-                    comments.append(comment)
+                    })
                 next_page_token = response.get('nextPageToken')
                 if not next_page_token:
                     break
             except Exception as e:
                 logging.error(f"Error fetching comments: {e}")
                 break
-
         logging.info(f"Fetched {len(comments)} comments from video ID: {video_id}")
     return comments
-
-if __name__ == '__main__':
-    import asyncio
-    video_id = "th5_9woFJmk"  # Example YouTube video ID
-    comments = asyncio.run(get_detailed_comments(video_id, max_results=2))
