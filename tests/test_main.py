@@ -58,4 +58,5 @@ def test_etl_pipeline_csv(mock_preprocess, mock_get_comments):
     # Check if the CSV file is created
     assert CSV_FILE.exists()
     df = pd.read_csv(CSV_FILE)
-    assert 'great video' in df['clean_text'].values
+    # Check if the preprocessed comments are in the CSV file
+    assert 'great video' in df['text'].values
