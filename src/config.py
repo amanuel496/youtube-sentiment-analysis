@@ -15,8 +15,13 @@ else:
     logging.warning(f"Warning: .env file not found at {env_path}")
 
 API_KEY = os.getenv('YOUTUBE_API_KEY')
-if not API_KEY:
-    logging.error("Error: YOUTUBE_API_KEY not found in environment variables.")
-    raise ValueError("YOUTUBE_API_KEY not found in environment variables.")
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_REGION = os.getenv('AWS_REGION')
+
+# Check if environment variables are set
+if not all ([API_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION]):
+    logging.error("Error: Environment variables not found.")
+    raise ValueError("Environment variables not found.")
 
 YOUTUBE_API_URL="https://www.googleapis.com/youtube/v3/commentThreads"

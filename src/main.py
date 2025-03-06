@@ -2,6 +2,7 @@ import logging
 from src.extraction.fetch_comments import get_detailed_comments
 from src.utils.file_saver import save_to_csv, save_to_json
 from src.preprocessing.preprocessing import preprocess_comments
+from src.sentiment_analysis.sentiment_analysis import analyze_sentiment
 
 
 # Configure logging
@@ -26,13 +27,19 @@ async def run_etl_pipeline(video_id: str, output_format: str = 'json') -> None:
         if preprocessed_comments.empty:
             logging.warning("No valid comments to preprocess.")
             return
-        
-        # Step 3: Load - Save the preprocessed comments to a file
+
+        # Step 3: Sentiment Analysis - Analyze the sentiment of the preprocessed comments
+        sentiment_results = analyze_sentiment(preprocessed_comments['clean_text'].tolist())
+        if not sentiment_results:
+            logging.warning("No sentiment analysis results available.")
+            return
+
+        # Step 4: Load - Save the sentiment analysis results to a file
         output_filename = f"comments_{video_id}.{output_format}"
         if output_format == 'json':
-            save_to_json(preprocessed_comments['clean_text'].tolist(), output_filename)
+            save_to_json(sentiment_results, output_filename)
         elif output_format == 'csv':
-            save_to_csv(preprocessed_comments, output_filename)
+            save_to_csv(sentiment_results, output_filename)
         else:
             logging.error(f"Unsupported output format: {output_format}")
             return
