@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 @app.get("/run-etl")
-async def run_etl(videoId: str, outputFormat: str = 'json'):
+async def run_etl(videoId: str, outputFormat: str = 'json') -> dict:
     """API endpoint to trigger the ETL pipeline."""
     try:
         await run_etl_pipeline(videoId, outputFormat)

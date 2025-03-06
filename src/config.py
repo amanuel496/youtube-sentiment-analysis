@@ -9,19 +9,20 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Load environment variables from .env file
 env_path = Path(__file__).parent.parent / '.env'
 logging.info(f"Loading environment variables from {env_path}")
+
 if env_path.exists():
     load_dotenv(dotenv_path=env_path)
 else:
     logging.warning(f"Warning: .env file not found at {env_path}")
 
+# Load API keys and configuration from environment variables
 API_KEY = os.getenv('YOUTUBE_API_KEY')
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_REGION = os.getenv('AWS_REGION')
+YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/commentThreads"
 
-# Check if environment variables are set
-if not all ([API_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION]):
-    logging.error("Error: Environment variables not found.")
+# Validate environment variables
+if not all([API_KEY, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION]):
+    logging.error("Error: Required environment variables are missing.")
     raise ValueError("Environment variables not found.")
-
-YOUTUBE_API_URL="https://www.googleapis.com/youtube/v3/commentThreads"
