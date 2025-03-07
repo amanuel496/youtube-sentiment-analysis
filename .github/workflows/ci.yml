@@ -47,11 +47,11 @@ jobs:
         env:
           PYTHONPATH: src
         run: |
-          pytest -v tests/test_extraction.py --junitxml=reports/test-results-extraction.xml
-          pytest -v tests/test_preprocessing.py --junitxml=reports/test-results-preprocessing.xml
-          pytest -v tests/test_file_saver.py --junitxml=reports/test-results-file-saver.xml
-          pytest -v tests/test_main.py --junitxml=reports/test-results-main.xml
-          pytest -v tests/test_api.py --junitxml=reports/test-results-api.xml
+          pytest -v backend/tests/test_extraction.py --junitxml=reports/test-results-extraction.xml
+          pytest -v backend/tests/test_preprocessing.py --junitxml=reports/test-results-preprocessing.xml
+          pytest -v backend/tests/test_file_saver.py --junitxml=reports/test-results-file-saver.xml
+          pytest -v backend/tests/test_main.py --junitxml=reports/test-results-main.xml
+          pytest -v backend/tests/test_api.py --junitxml=reports/test-results-api.xml
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
