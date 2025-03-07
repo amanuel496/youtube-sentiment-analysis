@@ -5,7 +5,8 @@ from pathlib import Path
 from src.utils.file_saver import save_to_json, save_to_csv
 
 # Define test file paths
-BASE_PATH = Path(__file__).parent.parent / 'data'
+BASE_PATH = Path(__file__).parent / 'data'
+BASE_PATH.mkdir(parents=True, exist_ok=True)
 JSON_FILE = BASE_PATH / 'test_comments.json'
 CSV_FILE = BASE_PATH / 'test_comments.csv'
 

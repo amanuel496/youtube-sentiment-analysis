@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from main import run_etl_pipeline
+from src.main import run_etl_pipeline
 import asyncio
 
 app = FastAPI()
