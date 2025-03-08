@@ -1,0 +1,45 @@
+# Global Ignore Rules
+*.pyc
+__pycache__/
+.env
+.vscode/
+.idea/
+.DS_Store
+*.log
+*.sqlite3
+*.lock
+*.pem
+
+# Node.js (Frontend)
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor Directories and Files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Backend
+venv/
+data/
+
+# Contentlayer
+.contentlayer
+
