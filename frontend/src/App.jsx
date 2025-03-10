@@ -14,27 +14,44 @@ export default function App() {
 
   const handleSubmit = async () => {
     if (!videoId) {
-      alert('Please enter a YouTube video ID.');
-      return;
+        alert('Please enter a YouTube video ID.');
+        return;
     }
     setIsLoading(true);
     setResultMessage('');
 
-    try {
-      const response = await fetch(`http://localhost:8000/run-etl?videoId=${videoId}&outputFormat=${outputFormat}`);
-      const data = await response.json();
+    const url = `${import.meta.env.VITE_API_URL}/run-etl?videoId=${videoId}&outputFormat=${outputFormat}`;
+    console.log('API Call URL:', url);
 
-      if (response.ok) {
-        setResultMessage(`ETL completed. Output saved to: ${data.filePath}`);
-      } else {
-        setResultMessage(`Error: ${data.error}`);
-      }
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP status ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.status === "Success") {
+            setResultMessage(`Success: ETL completed. Output saved to: ${data.output_file}`);
+        } else {
+            setResultMessage(`Error: ${data.error}. Full Response: ${JSON.stringify(data)}`);
+        }
     } catch (error) {
-      setResultMessage('Failed to execute ETL pipeline. Please try again.');
+        console.error('Fetch error:', error);
+        setResultMessage(`Failed to execute ETL pipeline. Error: ${error.message}`);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  };
+};
 
   return (
     <div className="bg-card">
