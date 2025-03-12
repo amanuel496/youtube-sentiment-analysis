@@ -1,17 +1,15 @@
-/* Beautiful and Modern CSS for YouTube Sentiment Analysis App */
-
 :root {
-  font-family: 'Poppins', Arial, sans-serif;
-  line-height: 1.6;
-  font-weight: 400;
   color-scheme: light dark;
   color: #333;
   background-color: #f3f4f6;
-  --primary-gradient: linear-gradient(135deg, #6d28d9, #d946ef, #ec4899);
+  --primary-gradient: linear-gradient(135deg, #6c28d993, #4695ef8e, #48ece9);
   --card-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 }
 
 body {
+  font-family: 'Poppins', Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
   margin: 0;
   padding: 0;
   display: flex;
@@ -21,6 +19,7 @@ body {
   background: var(--primary-gradient);
   background-size: 200% 200%;
   animation: gradientAnimation 8s ease infinite;
+  overflow-x: hidden;
 }
 
 @keyframes gradientAnimation {
@@ -29,7 +28,7 @@ body {
   100% { background-position: 0% 50%; }
 }
 
-h2 {
+h1, h2 {
   font-size: 2.5rem;
   color: #1f2937;
   margin-bottom: 1rem;
@@ -75,7 +74,9 @@ button:disabled {
 }
 
 p {
+  width: 50%;
   margin-top: 1.5rem;
+  margin-left: 20%;
   padding: 1rem;
   border-radius: 12px;
   background: #e5e7eb;
@@ -83,15 +84,19 @@ p {
   font-size: 1.1rem;
 }
 
-/* Additional styles for a polished look */
-.bg-card {
-  background-color: white;
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.2s;
+/* Utility Classes for Smooth Transitions */
+.transition-all {
+  transition: all 0.3s ease;
 }
 
-.bg-card:hover {
-  transform: scale(1.02);
+.shadow-md {
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+}
+
+#executive-summary {
+  max-width: 600px;
+}
+
+.sentiment-chart, .word-cloud {
+  max-width: 600px;
 }
