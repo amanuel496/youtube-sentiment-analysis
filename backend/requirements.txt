@@ -1,0 +1,6 @@
+aiohttp
+tenacity
+pandas
+nltk
+fastapi
+dotenv
