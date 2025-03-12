@@ -39,6 +39,9 @@ lerna-debug.log*
 # Backend
 venv/
 data/
+python/
+deploy/
+
 
 # Contentlayer
 .contentlayer
