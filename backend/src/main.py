@@ -1,4 +1,4 @@
-from src.utils import nltk_setup
+# from src.utils import nltk_setup
 import logging
 import asyncio
 import json
@@ -134,46 +134,25 @@ async def run_etl_pipeline(video_id: str, output_format: str = 'json') -> dict:
     try:
         logging.info(f"Starting ETL pipeline for video ID: {video_id}")
         
-        # # Step 1: Extract - Fetch comments
-        # comments = await get_detailed_comments(video_id)
-        # if not comments:
-        #     logging.warning(f"No comments found for video ID: {video_id}")
-        #     return {"status": "No comments found"}
+        # Step 1: Extract - Fetch comments
+        comments = await get_detailed_comments(video_id)
+        if not comments:
+            logging.warning(f"No comments found for video ID: {video_id}")
+            return {"status": "No comments found"}
 
-        # # Step 2: Transform - Preprocess
-        # preprocessed_comments = preprocess_comments([{'text': comment} for comment in comments])
-        # if preprocessed_comments.empty:
-        #     logging.warning("No valid comments to preprocess.")
-        #     return {"status": "No valid comments to preprocess"}
+        # Step 2: Transform - Preprocess
+        preprocessed_comments = preprocess_comments([{'text': comment} for comment in comments])
+        if preprocessed_comments.empty:
+            logging.warning("No valid comments to preprocess.")
+            return {"status": "No valid comments to preprocess"}
 
-        # # Step 3: Sentiment Analysis
-        # # sentiment_results = analyze_sentiment(preprocessed_comments['clean_text'].tolist())
-        # # if not sentiment_results:
-        # #     logging.warning("No sentiment analysis results available.")
-        # #     return {"status": "No sentiment analysis results"}
-        s3_client = boto3.client('s3')
-        BUCKET_NAME = "youtube-sentiment-analysis-backend"
-        S3_FOLDER = "lambda-results/"
-        json_filename = "sentiment_results.csv"
-        response = s3_client.get_object(
-            Bucket=BUCKET_NAME,
-            Key=f"{S3_FOLDER}{json_filename}"
-        )
+        # Step 3: Sentiment Analysis
+        sentiment_results = analyze_sentiment(preprocessed_comments['clean_text'].tolist())
+        if not sentiment_results:
+            logging.warning("No sentiment analysis results available.")
+            return {"status": "No sentiment analysis results"}
 
-        # Read the content
-        # sentiment_results = json_data['Body'].read().decode('utf-8')
-        # Read the CSV file
-        csv_data = response['Body'].read().decode('utf-8')
-
-        # Parse CSV into a list of dictionaries
-        sentiment_results = list(csv.DictReader(io.StringIO(csv_data)))
-        # print("sentiment_results type", type(sentiment_results))
-        # print("json_data type", type(json_data))
-        # print("sentiment results data", sentiment_results)
-        # print("json_data", json_data)
-
-
-        # Calculate sentiment breakdown
+        # Step 4: Calculate sentiment breakdown
         sentiment_counts = {
             'positive': sum(1 for r in sentiment_results if r['sentiment'] == 'POSITIVE'),
             'negative': sum(1 for r in sentiment_results if r['sentiment'] == 'NEGATIVE'),
@@ -218,16 +197,16 @@ async def run_etl_pipeline(video_id: str, output_format: str = 'json') -> dict:
     )
 
     # Load - Save the sentiment analysis results to a file
-    output_filename = f"comments_{video_id}.{output_format}"
-    if output_format == 'json':
-        save_to_json(sentiment_results, output_filename)
-    elif output_format == 'csv':
-        save_to_csv(sentiment_results, output_filename)
-    else:
-        logging.error(f"Unsupported output format: {output_format}")
-            # return
+    # output_filename = f"comments_{video_id}.{output_format}"
+    # if output_format == 'json':
+    #     save_to_json(sentiment_results, output_filename)
+    # elif output_format == 'csv':
+    #     save_to_csv(sentiment_results, output_filename)
+    # else:
+    #     logging.error(f"Unsupported output format: {output_format}")
+    #         # return
         
-    logging.info(f"ETL pipeline completed successfully. Output saved to {output_filename}")
+    # logging.info(f"ETL pipeline completed successfully. Output saved to {output_filename}")
 
     return {
         "status": "Success",
@@ -241,10 +220,11 @@ async def run_etl_pipeline(video_id: str, output_format: str = 'json') -> dict:
 def lambda_handler(event, context):
     video_link = event.get("queryStringParameters", {}).get("videoLink", "")
     video_id = extract_video_id(video_link)
-    print(f"video id: {video_id} and video link: {video_link}")
+    # print(f"video id: {video_id} and video link: {video_link}")
     if not video_id:
         logging.error("Invalid video link provided.")
         return {"status": "Invalid video link"}
+    # TODO: Delete the following line if it's not needed
     output_format = event.get("queryStringParameters", {}).get("outputFormat", "json").lower()
     
     loop = asyncio.get_event_loop()
@@ -257,5 +237,14 @@ def lambda_handler(event, context):
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type"
         },
-        "body": json.dumps(response)
+        "body": response
+        # "body": json.dumps(response)
     }
+
+# if name == 'main':
+#     lambda_handler({
+#         "queryStringParameters": {
+#             "videoLink": "https://www.youtube.com/watch?v=T7M3PpjBZzw",
+#             "outputFormat": "json"
+#         }
+#     }, None)
