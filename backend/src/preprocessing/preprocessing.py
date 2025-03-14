@@ -12,7 +12,7 @@ lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words('english'))
 
 # Whitelist to avoid over-lemmatization
-whitelist = {'this', 'is', 'us', 'at', 'lots', 'characters', 'of'}
+whitelist = {'this', 'text', 'is', 'us', 'at', 'lots', 'characters', 'of'}
 
 def clean_text(text: pd.Series) -> pd.Series:
     """Cleans and normalizes the input text using vectorized methods."""
