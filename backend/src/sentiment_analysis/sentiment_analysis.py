@@ -1,36 +1,26 @@
-import boto3
 import logging
 from typing import List, Dict
-import os
-import sys
+from nltk.sentiment import SentimentIntensityAnalyzer
 
-# Add the src directory to the system path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
-from src.config import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-
-# Initialize Boto3 client using environment variables
-comprehend = boto3.client(
-    'comprehend',
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name=AWS_REGION
-)
+# Initialize NLTK's VADER Sentiment Analyzer
+sia = SentimentIntensityAnalyzer()
 
 def analyze_sentiment(comments: List[str]) -> List[Dict[str, str]]:
-    """Analyzes sentiment of comments using AWS Comprehend."""
+    """Analyzes sentiment of comments using NLTK's VADER."""
     try:
         sentiment_results = []
         for comment in comments:
             if comment.strip():
-                response = comprehend.detect_sentiment(
-                    Text=comment,
-                    LanguageCode='en'
+                sentiment_score = sia.polarity_scores(comment)
+                sentiment_label = (
+                    "POSITIVE" if sentiment_score['compound'] > 0.05 
+                    else "NEGATIVE" if sentiment_score['compound'] < -0.05 
+                    else "NEUTRAL"
                 )
                 sentiment_results.append({
                     'text': comment,
-                    'sentiment': response['Sentiment'],
-                    'sentiment_score': response['SentimentScore']
+                    'sentiment': sentiment_label,
+                    'sentiment_score': sentiment_score
                 })
             else:
                 sentiment_results.append({

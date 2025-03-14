@@ -1,70 +1,170 @@
+import logging
+import re
+from typing import List, Dict
+
 import pandas as pd
+
+# Gensim
+from gensim.models import Phrases
+from gensim.models.phrases import Phraser
+
+# NLTK
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from typing import List, Dict
-import logging
+from nltk.tokenize import word_tokenize
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Initialize lemmatizer and stop words
+# ---------------------------------------
+# Global Objects & Configuration
+# ---------------------------------------
 lemmatizer = WordNetLemmatizer()
-stop_words = set(stopwords.words('english'))
+stop_words = set(stopwords.words("english"))
 
-# Whitelist to avoid over-lemmatization
-whitelist = {'this', 'text', 'is', 'us', 'at', 'lots', 'characters', 'of'}
+# Add any custom stopwords you want to remove
+CUSTOM_STOPWORDS = {
+    "text", "this", "is", "us", "at", "lots", "characters", "of", "amp"  # 'amp' from HTML decode
+}
 
-def clean_text(text: pd.Series) -> pd.Series:
-    """Cleans and normalizes the input text using vectorized methods."""
+# Combine standard + custom stopwords
+ALL_STOPWORDS = stop_words.union(CUSTOM_STOPWORDS)
+
+# Whitelist words that you DON'T want lemmatized or removed, even if they're in stopwords
+WHITELIST = {"this", "text", "us", "of"}
+
+
+# ---------------------------------------
+# 1) Vectorized Cleaning of Raw Text
+# ---------------------------------------
+def clean_raw_text(series: pd.Series) -> pd.Series:
+    """
+    Cleans and normalizes raw text using vectorized methods:
+    1. Lowercase and fill missing values.
+    2. Remove URLs, HTML tags, emails, and special characters.
+    3. Remove extra whitespace.
+
+    :param series: A pandas Series of raw text data.
+    :return: A cleaned pandas Series.
+    """
     try:
-        logging.debug("Starting vectorized text cleaning")
+        logging.debug("Starting vectorized text cleaning.")
 
-        # Convert to lowercase and handle non-string values safely
-        text = text.fillna('').astype(str).str.lower()
+        # 1. Lowercase & fill NaNs
+        series = series.fillna("").astype(str).str.lower()
 
-        # Remove URLs
-        text = text.str.replace(r'http\S+|www\.\S+', '', regex=True)
+        # 2. Regex replacements in a single pass
+        series = series.str.replace(r"http\S+|www\.\S+", "", regex=True)  # remove URLs
+        series = series.str.replace(r"<.*?>", "", regex=True)            # remove HTML tags
+        series = series.str.replace(r"(\S+)@(\S+)\.(\S+)", r"\1 \2\3", regex=True)  # emails
+        series = series.str.replace(r"[^a-zA-Z\s]", " ", regex=True)     # remove special chars
+        series = series.str.replace(r"\s+", " ", regex=True).str.strip() # extra whitespace
 
-        # Remove HTML tags
-        text = text.str.replace(r'<.*?>', '', regex=True)
-
-        # Handle email addresses
-        text = text.str.replace(r'(\S+)@(\S+)\.(\S+)', r'\1 \2\3', regex=True)
-
-        # Replace special characters with a space
-        text = text.str.replace(r'[^a-zA-Z\s]', ' ', regex=True)
-
-        # Remove extra whitespace
-        text = text.str.replace(r'\s+', ' ', regex=True).str.strip()
-
-        # Remove stop words and apply lemmatization
-        text = text.apply(lambda x: ' '.join([
-            word if word in whitelist else lemmatizer.lemmatize(word)
-            for word in x.split() if word in whitelist or word not in stop_words
-        ]))
-
-        logging.debug("Vectorized text cleaning completed")
-        return text
+        logging.debug("Vectorized text cleaning completed.")
+        return series
 
     except Exception as e:
-        logging.error(f"Error during vectorized text cleaning: {e}", exc_info=True)
-        return pd.Series()
+        logging.error(f"Error during raw text cleaning: {e}", exc_info=True)
+        # Return an empty Series of the same length to avoid breaking downstream code
+        return pd.Series([""] * len(series), index=series.index)
 
-def preprocess_comments(comments: List[Dict[str, str]]) -> pd.DataFrame:
-    """Preprocesses a list of comments by cleaning and preparing them for analysis."""
+
+# ---------------------------------------
+# 2) Token-Level Processing
+# ---------------------------------------
+def tokenize_remove_stopwords_lemmatize(text: str) -> List[str]:
+    """
+    Tokenizes a single string of text, removes stopwords, and lemmatizes each token.
+    Whitelisted words are excluded from lemmatization and stopword removal.
+
+    :param text: A cleaned string of text.
+    :return: A list of processed tokens.
+    """
+    tokens = word_tokenize(text)
+
+    processed_tokens = []
+    for token in tokens:
+        # If token is whitelisted, keep it exactly
+        if token in WHITELIST:
+            processed_tokens.append(token)
+        # Otherwise, remove if it's in ALL_STOPWORDS
+        elif token not in ALL_STOPWORDS:
+            # Lemmatize the token
+            lemma = lemmatizer.lemmatize(token)
+            processed_tokens.append(lemma)
+
+    return processed_tokens
+
+
+# ---------------------------------------
+# 3) Bigrams
+# ---------------------------------------
+def generate_bigrams(tokenized_docs: List[List[str]], min_count=5, threshold=10) -> List[List[str]]:
+    """
+    Generates bigrams from tokenized comments to improve topic modeling.
+
+    :param tokenized_docs: List of token lists, e.g., [["this", "video"], ...]
+    :param min_count: Minimum count of tokens to form a bigram.
+    :param threshold: Phrase score threshold. Higher threshold means fewer phrases.
+    :return: List of token lists with bigrams included where relevant.
+    """
+    bigram_model = Phrases(tokenized_docs, min_count=min_count, threshold=threshold)
+    bigram_phraser = Phraser(bigram_model)
+
+    return [bigram_phraser[doc] for doc in tokenized_docs]
+
+
+# ---------------------------------------
+# 4) Main Preprocessing Function
+# ---------------------------------------
+def preprocess_comments(comments: List[Dict[str, str]], 
+                        min_count=5, 
+                        threshold=10, 
+                        use_bigrams=True) -> pd.DataFrame:
+    """
+    Preprocesses a list of comments by:
+      1) Vectorized cleaning (remove URLs, HTML, etc.)
+      2) Tokenization, stopword removal, and lemmatization
+      3) (Optional) Bigram generation
+      4) Re-joining tokens into a final 'clean_text'
+
+    :param comments: List of dictionaries, each with a 'text' key.
+    :param min_count: Bigram min_count parameter.
+    :param threshold: Bigram threshold parameter.
+    :param use_bigrams: Whether to generate bigrams.
+    :return: A pandas DataFrame with columns ['text', 'clean_text', 'tokens'] (and optionally 'bigrams').
+    """
     try:
+        # Convert to DataFrame
         df = pd.DataFrame(comments)
 
-        if 'text' not in df.columns:
+        # Ensure we have a 'text' column
+        if "text" not in df.columns:
             logging.error("The 'text' column is missing from the input data.")
             return pd.DataFrame()
 
-        df['clean_text'] = clean_text(df['text'])
+        # 1. Vectorized cleaning
+        df["raw_clean_text"] = clean_raw_text(df["text"])
 
-        df = df[df['clean_text'].str.strip() != '']
+        # 2. Token-level cleaning (stopwords, lemmatization)
+        df["tokens"] = df["raw_clean_text"].apply(tokenize_remove_stopwords_lemmatize)
 
-        logging.info(f"Preprocessed {len(df)} comments.")
-        return df
+        # Remove rows where token list is empty
+        df = df[df["tokens"].apply(len) > 0]
+
+        # 3. (Optional) Generate bigrams
+        if use_bigrams and not df.empty:
+            tokens_list = df["tokens"].tolist()
+            bigrams_list = generate_bigrams(tokens_list, min_count=min_count, threshold=threshold)
+            df["tokens"] = bigrams_list
+
+        # 4. Re-join tokens into 'clean_text' for final display/analysis
+        df["clean_text"] = df["tokens"].apply(lambda x: " ".join(x))
+
+        # Filter out empty strings in 'clean_text'
+        df = df[df["clean_text"].str.strip() != ""]
+
+        logging.info(f"Preprocessed {len(df)} comments successfully.")
+        return df[["text", "clean_text", "tokens"]]
 
     except Exception as e:
         logging.error(f"Error preprocessing comments: {e}", exc_info=True)
