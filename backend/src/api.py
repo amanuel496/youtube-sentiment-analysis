@@ -16,7 +16,7 @@ app.add_middleware(
 )
 
 @app.get("/run-etl")
-async def run_etl(videoLink: str = Query(..., title="YouTube Video Link"), outputFormat: str = "json"):
+async def run_etl(videoLink: str = Query(..., title="YouTube Video Link")):
     """API endpoint to trigger the ETL pipeline."""
     
     logging.info(f"Received videoLink: {videoLink}")
@@ -29,7 +29,7 @@ async def run_etl(videoLink: str = Query(..., title="YouTube Video Link"), outpu
 
     try:
         # Run the ETL pipeline
-        result = await run_etl_pipeline(video_id, outputFormat)  # Now returning a dictionary
+        result = await run_etl_pipeline(video_id)  # Now returning a dictionary
         logging.info(f"ETL Pipeline Response: {result}")
 
         return result  # ✅ Directly return the dictionary

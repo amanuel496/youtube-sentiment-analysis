@@ -23,7 +23,7 @@ async def fetch_comments_page(session, video_id, page_token=None):
             logging.error(f"Failed to fetch comments page: HTTP {response.status}")
             response.raise_for_status()
 
-async def get_detailed_comments(video_id, max_results=1000):
+async def get_detailed_comments(video_id, max_results=100):
     """Fetches detailed comments from a YouTube video asynchronously with pagination and retry logic."""
     comments = []
     async with aiohttp.ClientSession() as session:
@@ -37,10 +37,10 @@ async def get_detailed_comments(video_id, max_results=1000):
                 for item in response.get('items', []):
                     comment_data = item['snippet']['topLevelComment']['snippet']
                     comments.append({
-                        'text': comment_data['textDisplay'],
-                        'author': comment_data['authorDisplayName'],
-                        'likes': comment_data['likeCount'],
-                        'published_at': comment_data['publishedAt']
+                        'text': comment_data['textDisplay']
+                        # 'author': comment_data['authorDisplayName'],
+                        # 'likes': comment_data['likeCount'],
+                        # 'published_at': comment_data['publishedAt']
                     })
                 next_page_token = response.get('nextPageToken')
                 if not next_page_token:
